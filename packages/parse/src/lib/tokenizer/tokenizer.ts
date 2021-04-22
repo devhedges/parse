@@ -1,11 +1,19 @@
 interface Token {
-  type: string;
+  type: TokenType | string;
   value: string;
 }
 
 type TokenTuple = [number, Token | null];
 
-type Tokenizer = (input: string, current: number) => TokenTuple;
+type Tokenizer = (input: string, current: number, quote?: string) => TokenTuple;
+
+export enum TokenType {
+  BRACKET,
+  ARROW,
+  NAME,
+  EQ,
+  TEXT,
+}
 
 /**
  * Single-character token
@@ -16,7 +24,7 @@ type Tokenizer = (input: string, current: number) => TokenTuple;
  * @returns TokenTuple
  */
 export const tokenizeSingleChar = (
-  type: string,
+  type: TokenType,
   value: string,
   input: string,
   current: number
@@ -31,7 +39,7 @@ export const tokenizeSingleChar = (
  * @returns
  */
 export const tokenizeMultipleChars = (
-  type: string,
+  type: TokenType | string,
   pattern: RegExp,
   input: string,
   current: number
@@ -51,35 +59,6 @@ export const tokenizeMultipleChars = (
 };
 
 /**
- * Tokenize a String
- * @param input
- * @param current
- * @returns
- */
-export const tokenizeString: Tokenizer = (
-  input: string,
-  current: number
-): TokenTuple => {
-  if (input[current] === '"') {
-    let value = '';
-    let consumedChars = 0;
-    consumedChars++;
-    let char = input[current + consumedChars];
-    while (char !== '"') {
-      if (char === undefined) {
-        throw new TypeError('unterminated string ');
-      }
-      value += char;
-      consumedChars++;
-      char = input[current + consumedChars];
-    }
-    return [consumedChars + 1, { type: 'STRING', value }];
-  }
-
-  return [0, null];
-};
-
-/**
  * Skip Whitespace
  * @param input
  * @param current
@@ -94,19 +73,43 @@ export const skipWhiteSpace: Tokenizer = (input, current) =>
 export const tokenizers: Tokenizer[] = [
   skipWhiteSpace,
 
-  // Parens
+  // open square bracket
   (input: string, current: number) =>
-    tokenizeSingleChar('PAREN', '(', input, current),
-  (input: string, current: number) =>
-    tokenizeSingleChar('PAREN', ')', input, current),
-  tokenizeString,
+    tokenizeSingleChar(TokenType.BRACKET, '[', input, current),
 
-  // tokenize number
+  // close square breacket
   (input: string, current: number) =>
-    tokenizeMultipleChars('NUMBER', new RegExp(/[0-9]/), input, current),
-  // tokenize name
+    tokenizeSingleChar(TokenType.BRACKET, ']', input, current),
+
+  // open arrow bracket
   (input: string, current: number) =>
-    tokenizeMultipleChars('NUMBER', new RegExp(/[a-z]/i), input, current),
+    tokenizeSingleChar(TokenType.ARROW, '<', input, current),
+
+  // close arrow breacket
+  (input: string, current: number) =>
+    tokenizeSingleChar(TokenType.ARROW, '>', input, current),
+
+  // close arrow breacket
+  (input: string, current: number) =>
+    tokenizeSingleChar(TokenType.EQ, '=', input, current),
+
+  // tokenize tag name
+  (input: string, current: number) =>
+    tokenizeMultipleChars(
+      TokenType.NAME,
+      new RegExp(/[\w\-]/i), // only match html tag names w/ '-' being the only exception.
+      input,
+      current
+    ),
+
+  // tokenize tag name
+  (input: string, current: number) =>
+    tokenizeMultipleChars(
+      TokenType.NAME,
+      new RegExp(/[^\<\>\[\]]+/i),
+      input,
+      current
+    ),
 ];
 
 /**
@@ -132,9 +135,6 @@ export function tokenizer(input: string): Token[] {
         tokens.push(token);
       }
     });
-    if (!tokenized) {
-      throw new TypeError('I dont know what this character is: ' + input);
-    }
   }
   return tokens;
 }
