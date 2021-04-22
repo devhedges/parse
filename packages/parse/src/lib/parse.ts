@@ -3,6 +3,6 @@
  * @param input
  * @returns
  */
-export function parse(input: string): string {
+export function parse(): string {
   return 'parse';
 }

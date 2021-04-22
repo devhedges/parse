@@ -97,6 +97,7 @@ export const tokenizers: Tokenizer[] = [
   (input: string, current: number) =>
     tokenizeMultipleChars(
       TokenType.NAME,
+      /* eslint-disable no-useless-escape */
       new RegExp(/[\w\-]/i), // only match html tag names w/ '-' being the only exception.
       input,
       current
@@ -106,6 +107,7 @@ export const tokenizers: Tokenizer[] = [
   (input: string, current: number) =>
     tokenizeMultipleChars(
       TokenType.NAME,
+      /* eslint-disable no-useless-escape */
       new RegExp(/[^\<\>\[\]]+/i),
       input,
       current
@@ -118,7 +120,7 @@ export const tokenizers: Tokenizer[] = [
  */
 export function tokenizer(input: string): Token[] {
   let current = 0;
-  let tokens: Token[] = [];
+  const tokens: Token[] = [];
 
   while (current < input.length) {
     let tokenized = false;
@@ -126,7 +128,7 @@ export function tokenizer(input: string): Token[] {
     tokenizers.forEach((tokenizer_fn: Tokenizer) => {
       if (tokenized) return;
 
-      let [consumedChars, token] = tokenizer_fn(input, current);
+      const [consumedChars, token] = tokenizer_fn(input, current);
       if (consumedChars !== 0) {
         tokenized = true;
         current += consumedChars;

@@ -27,7 +27,7 @@ describe('tokenizer', () => {
   });
 
   it('should tokenize multiple character tokens', () => {
-    let regexp: RegExp = /[0-9]/;
+    const regexp = /[0-9]/;
 
     const results = tokenizeMultipleChars('NUMBER', regexp, '123', 0);
     const [length, token] = results;
@@ -39,7 +39,7 @@ describe('tokenizer', () => {
   });
 
   it('should tokenize multiple character tokens', () => {
-    let regexp: RegExp = /[0-9]/;
+    const regexp = /[0-9]/;
 
     const results = tokenizeMultipleChars('NUMBER', regexp, 'abc', 0);
     const [length, token] = results;
@@ -68,7 +68,7 @@ describe('tokenizer', () => {
   });
 
   it('should tokenize an input string', () => {
-    let results = tokenizer('[add 2 3]');
+    const results = tokenizer('[add 2 3]');
 
     expect(results).toHaveLength(5);
     expect(results[0]).toHaveProperty('type', TokenType.BRACKET);

@@ -10,11 +10,7 @@ import { parse } from './parse';
 // [newsletter-table]
 // [blurb]
 describe('parse', () => {
-  const html = `
-    parse
-  `;
-
   it('should work', () => {
-    expect(parse(html)).toEqual('parse');
+    expect(parse()).toEqual('parse');
   });
 });
